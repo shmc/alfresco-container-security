@@ -2,7 +2,7 @@
 
 <!-- Copyright (c) 2008 by ParaRede TI. All Rights Reserved. -->
 
-<project name="AlfrescoParaRede" default="release" basedir=".">
+<project name="AlfrescoConstraintSecurity" default="release" basedir=".">
 	
 	<property environment="env" />
 	<property name="repository.dir" value="${env.MAVEN_REPOSITORY}" />
@@ -13,7 +13,7 @@
 	<property name="lib.dir" value="lib" />
 		
 	<property name="jar.version" value="1.0" />
-	<property name="jar.name" value="alfresco-pararede-${jar.version}" />
+	<property name="jar.name" value="alfresco-container-security-${jar.version}" />
 	
 	<target name="prepare">
 		<mkdir dir="${build.dir}" />
