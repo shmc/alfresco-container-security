@@ -1,4 +1,4 @@
-package com.pararede.alfresco.containersecurity;
+package com.pararede.alfresco.security;
 
 import java.io.IOException;
 
