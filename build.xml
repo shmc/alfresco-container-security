@@ -1,11 +1,8 @@
 <?xml version="1.0"?>
 
-<!-- Copyright (c) 2008 by ParaRede TI. All Rights Reserved. -->
+<!-- Copyright (c) 2008 by ParaRede. All Rights Reserved. -->
 
-<project name="AlfrescoConstraintSecurity" default="release" basedir=".">
-	
-	<property environment="env" />
-	<property name="repository.dir" value="${env.MAVEN_REPOSITORY}" />
+<project name="alfresco-container-security" default="release" basedir=".">
 	
 	<property name="src.dir" value="src/java" />
 	<property name="build.dir" value="build" />	
@@ -13,7 +10,7 @@
 	<property name="lib.dir" value="lib" />
 		
 	<property name="jar.version" value="1.0" />
-	<property name="jar.name" value="alfresco-container-security-${jar.version}" />
+	<property name="jar.name" value="${ant.project.name}-${jar.version}" />
 	
 	<target name="prepare">
 		<mkdir dir="${build.dir}" />
@@ -26,9 +23,6 @@
 	
 	<path id="class.path">
 		<fileset dir="${lib.dir}" includes="*.jar" />
-		<fileset dir="${repository.dir}/commons-logging/jars/" includes="*.jar" />
-		<fileset dir="${repository.dir}/servlet/jars/" includes="*.jar" />
-		<fileset dir="${repository.dir}/jta/jars/" includes="*.jar" />
 		<pathelement path="${java.class.path}/" />
 	</path>
 	

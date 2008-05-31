@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2008 by ParaRede TI. All Rights Reserved.
+ */
 package com.pararede.alfresco.security;
 
 import java.io.IOException;
@@ -34,89 +37,92 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+/**
+ * @author Sergio Montelobo
+ */
 public class AlfrescoContainerSecurityFilter implements Filter {
 
-    private static final Log logger = LogFactory.getLog(AlfrescoContainerSecurityFilter.class);
+	private static final Log logger = LogFactory.getLog(AlfrescoContainerSecurityFilter.class);
 
-    private WebApplicationContext context;
-    private ServiceRegistry registry;
+	private WebApplicationContext context;
+	private ServiceRegistry registry;
 
-    public void init(FilterConfig config) throws ServletException {
-	this.context = WebApplicationContextUtils.getWebApplicationContext(config.getServletContext());
-	this.registry = (ServiceRegistry) this.context.getBean("ServiceRegistry");
-    }
-
-    public void destroy() {
-	this.registry = null;
-    }
-
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-	HttpServletRequest httpRequest = (HttpServletRequest) request;
-	HttpServletResponse httpResponse = (HttpServletResponse) response;
-	HttpSession httpSession = httpRequest.getSession();
-
-	String userName = httpRequest.getUserPrincipal().getName();
-	User userAuth = AuthenticationHelper.getUser(httpRequest, httpResponse);
-	if ((userAuth == null) || !userName.equals(userAuth.getUserName())) {
-	    try {
-		TransactionService transactionService = this.registry.getTransactionService();
-		UserTransaction tx = transactionService.getUserTransaction();
-		try {
-		    tx.begin();
-
-		    // remove the session invalidated flag (used to remove last username cookie by
-		    // AuthenticationFilter)
-		    httpSession.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
-
-		    if (logger.isDebugEnabled()) {
-			logger.debug("Authenticating user " + userName);
-		    }
-		    AuthenticationService authenticationService = getAuthenticationService();
-		    authenticationService.authenticate(userName, null);
-
-		    PersonService personService = this.registry.getPersonService();
-		    userAuth = new User(userName, authenticationService.getCurrentTicket(), personService.getPerson(userName));
-
-		    NodeService nodeService = this.registry.getNodeService();
-		    NodeRef homeSpaceRef = (NodeRef) nodeService.getProperty(personService.getPerson(userName), ContentModel.PROP_HOMEFOLDER);
-		    if (!nodeService.exists(homeSpaceRef)) {
-			throw new InvalidNodeRefException(homeSpaceRef);
-		    }
-		    userAuth.setHomeSpaceId(homeSpaceRef.getId());
-
-		    httpSession.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, userAuth);
-		    httpSession.setAttribute(LoginBean.LOGIN_EXTERNAL_AUTH, true);
-
-		    tx.commit();
-		} catch (Throwable e) {
-		    tx.rollback();
-		    throw new ServletException(e);
-		}
-	    } catch (SystemException e) {
-		throw new ServletException(e);
-	    }
-	} else {
-	    if (logger.isDebugEnabled()) {
-		logger.debug("User " + userName + " already authenticated");
-	    }
-
-	    AuthenticationStatus status = AuthenticationHelper.authenticate(httpSession.getServletContext(), httpRequest, httpResponse, false);
-	    if (status != AuthenticationStatus.Success) {
-		throw new ServletException("User not correctly autheticated");
-	    }
+	public void init(FilterConfig config) throws ServletException {
+		this.context = WebApplicationContextUtils.getWebApplicationContext(config.getServletContext());
+		this.registry = (ServiceRegistry) this.context.getBean("ServiceRegistry");
 	}
 
-	chain.doFilter(request, response);
-    }
+	public void destroy() {
+		this.registry = null;
+	}
 
-    private AuthenticationService getAuthenticationService() {
-	SimpleAcceptOrRejectAllAuthenticationComponentImpl authenticationComponent = new SimpleAcceptOrRejectAllAuthenticationComponentImpl();
-	authenticationComponent.setAccept(true);
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		HttpServletRequest httpRequest = (HttpServletRequest) request;
+		HttpServletResponse httpResponse = (HttpServletResponse) response;
+		HttpSession httpSession = httpRequest.getSession();
 
-	AuthenticationServiceImpl authenticationService = new AuthenticationServiceImpl();
-	authenticationService.setAuthenticationComponent(authenticationComponent);
-	authenticationService.setTicketComponent((TicketComponent) this.context.getBean("ticketComponent"));
+		String userName = httpRequest.getUserPrincipal().getName();
+		User userAuth = AuthenticationHelper.getUser(httpRequest, httpResponse);
+		if ((userAuth == null) || !userName.equals(userAuth.getUserName())) {
+			try {
+				TransactionService transactionService = this.registry.getTransactionService();
+				UserTransaction tx = transactionService.getUserTransaction();
+				try {
+					tx.begin();
 
-	return authenticationService;
-    }
+					// remove the session invalidated flag (used to remove last username cookie by
+					// AuthenticationFilter)
+					httpSession.removeAttribute(AuthenticationHelper.SESSION_INVALIDATED);
+
+					if (logger.isDebugEnabled()) {
+						logger.debug("Authenticating user " + userName);
+					}
+					AuthenticationService authenticationService = getAuthenticationService();
+					authenticationService.authenticate(userName, null);
+
+					PersonService personService = this.registry.getPersonService();
+					userAuth = new User(userName, authenticationService.getCurrentTicket(), personService.getPerson(userName));
+
+					NodeService nodeService = this.registry.getNodeService();
+					NodeRef homeSpaceRef = (NodeRef) nodeService.getProperty(personService.getPerson(userName), ContentModel.PROP_HOMEFOLDER);
+					if (!nodeService.exists(homeSpaceRef)) {
+						throw new InvalidNodeRefException(homeSpaceRef);
+					}
+					userAuth.setHomeSpaceId(homeSpaceRef.getId());
+
+					httpSession.setAttribute(AuthenticationHelper.AUTHENTICATION_USER, userAuth);
+					httpSession.setAttribute(LoginBean.LOGIN_EXTERNAL_AUTH, true);
+
+					tx.commit();
+				} catch (Throwable e) {
+					tx.rollback();
+					throw new ServletException(e);
+				}
+			} catch (SystemException e) {
+				throw new ServletException(e);
+			}
+		} else {
+			if (logger.isDebugEnabled()) {
+				logger.debug("User " + userName + " already authenticated");
+			}
+
+			AuthenticationStatus status = AuthenticationHelper.authenticate(httpSession.getServletContext(), httpRequest, httpResponse, false);
+			if (status != AuthenticationStatus.Success) {
+				throw new ServletException("User not correctly autheticated");
+			}
+		}
+
+		chain.doFilter(request, response);
+	}
+
+	private AuthenticationService getAuthenticationService() {
+		SimpleAcceptOrRejectAllAuthenticationComponentImpl authenticationComponent = new SimpleAcceptOrRejectAllAuthenticationComponentImpl();
+		authenticationComponent.setAccept(true);
+
+		AuthenticationServiceImpl authenticationService = new AuthenticationServiceImpl();
+		authenticationService.setAuthenticationComponent(authenticationComponent);
+		authenticationService.setTicketComponent((TicketComponent) this.context.getBean("ticketComponent"));
+
+		return authenticationService;
+	}
 }
