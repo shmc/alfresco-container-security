@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" output="target/classes" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/alfresco-core.jar"/>
-	<classpathentry kind="lib" path="lib/alfresco-repository.jar"/>
-	<classpathentry kind="lib" path="lib/alfresco-web-client.jar"/>
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/jta.jar"/>
-	<classpathentry kind="output" path="classses"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
